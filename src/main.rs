@@ -79,15 +79,24 @@ fn main() -> Result<()> {
                 anyhow::bail!("'add'、'delete'、'list'はエイリアスとして使用できません");
             }
             let target_path = match path {
-                Some(p) => PathBuf::from(p),
+                Some(p) => {
+                    let path_buf = PathBuf::from(p);
+                    if path_buf.is_absolute() {
+                        path_buf
+                    } else {
+                        std::env::current_dir()?.join(path_buf)
+                    }
+                }
                 None => std::env::current_dir()?,
             };
             if !target_path.exists() {
                 anyhow::bail!("指定されたパスが存在しません: {}", target_path.display());
             }
-            config.aliases.insert(alias.clone(), target_path.to_string_lossy().into_owned());
+            let absolute_path = target_path.canonicalize()
+                .context("パスの正規化に失敗しました")?;
+            config.aliases.insert(alias.clone(), absolute_path.to_string_lossy().into_owned());
             config.save()?;
-            println!("エイリアス '{}' を '{}' に登録しました！", alias, target_path.display());
+            println!("エイリアス '{}' を '{}' に登録しました！", alias, absolute_path.display());
         }
         Commands::Jump { alias } => {
             if let Some(path) = config.aliases.get(&alias) {
