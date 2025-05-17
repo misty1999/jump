@@ -15,13 +15,11 @@ cargo build --release
 
 2. シェル統合を設定：
 ```bash
-source [jump.shのパス]
+echo 'source "$(pwd)/jump.sh"' >> ~/.bashrc
+source ~/.bashrc
 ```
 
-example:source /home/misty1999/cli/jump/jump.sh
-
-
-bashrcやzshrcに上記を追加することで、永続的に使用可能になります。
+これで、Jumpコマンドが永続的に使用可能になります！
 
 ## 使用方法
 
